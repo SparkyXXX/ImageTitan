@@ -1,8 +1,15 @@
+/*
+ * @Project: Infantry Code
+ * @Author: GDDG08
+ * @Date: 2024-10-04 12:03:34
+ * @LastEditors: SparkyXXX
+ * @LastEditTime: 2024-10-04 20:25:01
+ */
 #ifndef _SF_BLDC_h
 #define _SF_BLDC_h
 
-#include <Arduino.h>
 #include "SF_BLDC_shared_struct.h"
+#include <Arduino.h>
 
 class SF_BLDC
 {

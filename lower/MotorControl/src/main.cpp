@@ -1,3 +1,10 @@
+/*
+ * @Project: Infantry Code
+ * @Author: GDDG08
+ * @Date: 2024-10-04 12:03:34
+ * @LastEditors: SparkyXXX
+ * @LastEditTime: 2024-10-04 21:12:08
+ */
 #include "Pins_Specify.h"
 #include "SF_Communication.h"
 #include "SF_Motor.h"
@@ -6,7 +13,7 @@
 #include <SPI.h>
 #include <Wire.h>
 
-/* 串口控制，数据包示例：T1,1,4,4,0B\n
+/* 串口测试，数据包示例：T1,1,4,4,0B\n
 T为包头，0B为包尾
 1,1分别为M0、M1期望值
 4,4分别为M0、M1控制模式：1为速度模式，2为位置模式，3为速度加位置模式，4为力矩模式
@@ -28,7 +35,7 @@ void setup()
 {
   Serial.begin(115200);
   com.linkMotor(M0, M1); // 链接电机和通信接口 可以选一个或两个
-  com.init(USB);         // 选择通信的输出 USB:通过USB输出；ONBOARD:与扩展主控通信。
+  com.init(ONBOARD);     // 选择通信的输出 USB:通过USB输出；ONBOARD:与扩展主控通信。
 
   // 为AS5600编码器的初始化
   //  iic0.begin(AS5600_SDA0, AS5600_SCL0, 400000UL);

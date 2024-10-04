@@ -2,84 +2,107 @@
  * @Project: Infantry Code
  * @Author: GDDG08
  * @Date: 2024-10-02 11:11:36
- * @LastEditors: 3113624526
- * @LastEditTime: 2024-10-02 14:46:38
+ * @LastEditors: SparkyXXX
+ * @LastEditTime: 2024-10-04 21:47:15
  */
-#include "SF_BLDC.h"
-#include "SF_Wireless.h"
-#include <Arduino.h>
 
-// UDP 连接
-unsigned int local = 2316;             // 通讯端口
-const char *password = "Hrx20020729,"; // wifi密码
-const char *ssid = "BIT-Mobile";       // wifi名称
-uint8_t cnt;
-IPAddress ipServidor(10, 198, 239, 129); // 电脑IP(要链接的IP)
-IPAddress ipClient(10, 198, 239, 180);   // 扩展主控的IP  自己设置
+#include "SF_BLDC.h"
+#include <Arduino.h>
+#include <ESP32Servo.h>
+#include <algorithm>
+
+// #define DEBUG
 
 SF_BLDC motors = SF_BLDC(Serial2);
-SF_Wireless wireless = SF_Wireless(ssid, password); // 参数1:IP名 参数2:wifi密码
-
-SF_BLDC_Wireless_DATA REV_Matlab_Values; // 定义UDP数据接收对象
 SF_BLDC_DATA driver;
+Servo myServo;
+String inputString = "";
+const int servoPin = 1;
+float wheel_spd = 0.0;
+float servo_pos = 0.0;
 
-// 无线数据接收任务进程
-void wiressRecv(void *pvParameters)
+bool validatePacket(String packet)
 {
-    while (1)
+    int commaCount = 0;
+    for (int i = 0; i < packet.length(); i++)
     {
-        REV_Matlab_Values = wireless.recFromWireless();
-        vTaskDelay(1);
+        if (packet.charAt(i) == ',')
+        {
+            commaCount++;
+        }
     }
+    if (commaCount != 3)
+    {
+        return false;
+    }
+
+    if (packet.startsWith("H") && packet.endsWith("X"))
+    {
+        int firstCommaIndex = packet.indexOf(',');
+        int secondCommaIndex = packet.indexOf(',', firstCommaIndex + 1);
+        int thirdCommaIndex = packet.indexOf(',', secondCommaIndex + 1);
+
+        if (firstCommaIndex != -1 && secondCommaIndex != -1 && thirdCommaIndex != -1 && thirdCommaIndex < packet.length() - 1)
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
-// 无线数据发送函数
-void wiressSend()
+void parsePacket(String packet)
 {
-    cnt++;
-    if (cnt > 2)
-    {
-        cnt = 0;
-        wireless.sendToWireless(driver);
-    }
+    int firstCommaIndex = packet.indexOf(',');
+    int secondCommaIndex = packet.indexOf(',', firstCommaIndex + 1);
+    int thirdCommaIndex = packet.indexOf(',', secondCommaIndex + 1);
+    wheel_spd = packet.substring(firstCommaIndex + 1, secondCommaIndex).toFloat();
+    servo_pos = packet.substring(secondCommaIndex + 1, thirdCommaIndex).toFloat();
+#ifdef DEBUG
+    Serial.print("Parsed wheel_spd: ");
+    Serial.println(wheel_spd);
+    Serial.print("Parsed servo_pos: ");
+    Serial.println(servo_pos);
+#endif
 }
 
 void setup()
 {
     Serial.begin(115200);
-    motors.init();                                  // 电机控制部分初始化
-    wireless.WiFiInit(ipClient, ipServidor, local); // UDP 无线网络初始化
-    xTaskCreatePinnedToCore(wiressRecv,             // 具体实现的函数
-                            "RECV",                 // 任务名称
-                            8192,                   // 堆栈大小
-                            NULL,                   // 输入参数
-                            1,                      // 任务优先级
-                            NULL,                   //
-                            0                       // 核心  0\1
-    );
-
-    motors.setModes(4, 4); // 控制模式设置
-}
-
-void wirelessRun()
-{
-    driver = motors.getBLDCData();                                               // 获取电机状态数据
-    wiressSend();                                                                // 无线发送电机状态数据
-    motors.setModes(REV_Matlab_Values.M0_Mode, REV_Matlab_Values.M1_Mode);       // 设置电机模式(双力矩)
-    motors.setTargets(REV_Matlab_Values.M0_Target, REV_Matlab_Values.M1_Target); // 设置电机目标值
-
-    // 角度
-    motors.setM0AnglePID(REV_Matlab_Values.M0_POS_P, REV_Matlab_Values.M0_POS_I, REV_Matlab_Values.M0_POS_D, 100000);
-    motors.setM1AnglePID(REV_Matlab_Values.M1_POS_P, REV_Matlab_Values.M1_POS_I, REV_Matlab_Values.M1_POS_D, 100000);
-    // 速度
-    motors.setM0VelPID(REV_Matlab_Values.M0_VEL_P, REV_Matlab_Values.M0_VEL_I, REV_Matlab_Values.M0_VEL_D, 100000);
-    motors.setM1VelPID(REV_Matlab_Values.M1_VEL_P, REV_Matlab_Values.M1_VEL_I, REV_Matlab_Values.M1_VEL_D, 100000);
-    // 电流
-    motors.setM0CurrentPID(REV_Matlab_Values.M0_CURR_P, REV_Matlab_Values.M0_CURR_I, REV_Matlab_Values.M0_CURR_D, 1.5);
-    motors.setM1CurrentPID(REV_Matlab_Values.M1_CURR_P, REV_Matlab_Values.M1_CURR_I, REV_Matlab_Values.M1_CURR_D, 1.5);
+    myServo.attach(servoPin);
+    motors.init();
+    motors.setModes(4, 4);
+    delay(1000);
 }
 
 void loop()
 {
-    wirelessRun();
+    while (Serial.available())
+    {
+        char inChar = (char)Serial.read();
+        inputString += inChar;
+
+        if (inChar == 'X')
+        {
+#ifdef DEBUG
+            Serial.print("Received packet: ");
+            Serial.println(inputString);
+#endif
+            if (validatePacket(inputString))
+            {
+                parsePacket(inputString);
+            }
+            else
+            {
+                Serial.println("Invalid packet received!");
+            }
+            inputString = "";
+        }
+    }
+    // driver = motors.getBLDCData();
+    // Serial.printf("%f,%f\n", driver.M0_speed, driver.M1_speed);
+    wheel_spd = std::max(-2.0f, std::min(wheel_spd, 2.0f));
+    servo_pos = std::max(60.0f, std::min(servo_pos, 120.0f));
+    myServo.write(servo_pos);
+    delay(15);
+    motors.setTargets(wheel_spd, wheel_spd);
 }

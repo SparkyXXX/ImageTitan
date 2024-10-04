@@ -6,7 +6,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import Joy
 import serial
 
-wheel_spd_coed = -1.0
+wheel_spd_coed = -1.5
 
 class SerialSenderNode(Node):
     def __init__(self):
@@ -20,18 +20,13 @@ class SerialSenderNode(Node):
 
     def joy_callback(self, joy_msg):
         wheel_spd = joy_msg.axes[1] * wheel_spd_coed
-        servo_pos = joy_msg.axes[0] * 90.0 + 90.0
+        servo_pos = joy_msg.axes[0] * -30.0 + 90.0
         self.send_to_serial(wheel_spd, servo_pos)
 
     def send_to_serial(self, wheel_spd, servo_pos):
-        # data1 = f"{{T{wheel_spd:.2f},{wheel_spd:.2f},4,4,0B\n}}"
-        data1 = f"T{wheel_spd:.2f},{wheel_spd:.2f},4,4,0B\n"
-        # data2 = f"{{S{int(servo_pos)}A}}"
-        self.serial_port.write(data1.encode())
-        # self.serial_port.write(data2.encode())
-
-        self.get_logger().info(f"发送数据到串口: {data1.strip()}")
-        # self.get_logger().info(f"发送数据到串口: {data2.strip()}")
+        data = f"H,{wheel_spd:.2f},{servo_pos:.2f},X"
+        self.serial_port.write(data.encode())
+        self.get_logger().info(f"发送数据到串口: {data.strip()}")
 
     def destroy_node(self):
         self.serial_port.close()
