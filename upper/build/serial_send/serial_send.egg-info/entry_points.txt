@@ -1,0 +1,3 @@
+[console_scripts]
+send = serial_send.send:main
+

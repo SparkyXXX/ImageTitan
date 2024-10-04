@@ -1,0 +1,22 @@
+running egg_info
+writing ../../build/serial_send/serial_send.egg-info/PKG-INFO
+writing dependency_links to ../../build/serial_send/serial_send.egg-info/dependency_links.txt
+writing entry points to ../../build/serial_send/serial_send.egg-info/entry_points.txt
+writing requirements to ../../build/serial_send/serial_send.egg-info/requires.txt
+writing top-level names to ../../build/serial_send/serial_send.egg-info/top_level.txt
+reading manifest file '../../build/serial_send/serial_send.egg-info/SOURCES.txt'
+writing manifest file '../../build/serial_send/serial_send.egg-info/SOURCES.txt'
+running build
+running build_py
+copying serial_send/send.py -> /home/hrx/ImageTitan/build/serial_send/build/lib/serial_send
+running install
+running install_lib
+copying /home/hrx/ImageTitan/build/serial_send/build/lib/serial_send/send.py -> /home/hrx/ImageTitan/install/serial_send/lib/python3.10/site-packages/serial_send
+byte-compiling /home/hrx/ImageTitan/install/serial_send/lib/python3.10/site-packages/serial_send/send.py to send.cpython-310.pyc
+running install_data
+running install_egg_info
+removing '/home/hrx/ImageTitan/install/serial_send/lib/python3.10/site-packages/serial_send-0.0.0-py3.10.egg-info' (and everything under it)
+Copying ../../build/serial_send/serial_send.egg-info to /home/hrx/ImageTitan/install/serial_send/lib/python3.10/site-packages/serial_send-0.0.0-py3.10.egg-info
+running install_scripts
+Installing send script to /home/hrx/ImageTitan/install/serial_send/lib/serial_send
+writing list of installed files to '/home/hrx/ImageTitan/build/serial_send/install.log'

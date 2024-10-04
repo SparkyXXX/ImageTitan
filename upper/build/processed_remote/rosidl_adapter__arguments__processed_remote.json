@@ -1,0 +1,6 @@
+{
+  "package_name": "processed_remote",
+  "non_idl_tuples": [
+    "/home/hrx/ImageTitan/src/processed_remote:msg/ProcessedRemote.msg"
+  ]
+}

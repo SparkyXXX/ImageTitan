@@ -1,0 +1,4 @@
+source;share/processed_remote/environment/ament_prefix_path.sh
+source;share/processed_remote/environment/library_path.sh
+source;share/processed_remote/environment/path.sh
+source;share/processed_remote/environment/pythonpath.sh
