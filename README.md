@@ -2,6 +2,8 @@
 
 场地图像采集车
 
+<img src="assets/wx_camera_1725183484065.jpg" alt="wx_camera_1725183484065" style="zoom:40%;" />
+
 ## version 1
 
 整车运动方式参考普通汽车，即后轮电机驱动，前轮舵机转向
