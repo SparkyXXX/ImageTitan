@@ -24,12 +24,13 @@ class SerialSenderNode(Node):
         self.send_to_serial(wheel_spd, servo_pos)
 
     def send_to_serial(self, wheel_spd, servo_pos):
-        data1 = f"{{T{wheel_spd:.2f},{wheel_spd:.2f},4,4,0B\n}}"
-        data2 = f"{{S{int(servo_pos)}A}}"
+        # data1 = f"{{T{wheel_spd:.2f},{wheel_spd:.2f},4,4,0B\n}}"
+        data1 = f"T{wheel_spd:.2f},{wheel_spd:.2f},4,4,0B\n"
+        # data2 = f"{{S{int(servo_pos)}A}}"
         self.serial_port.write(data1.encode())
-        self.serial_port.write(data2.encode())
+        # self.serial_port.write(data2.encode())
 
-        # self.get_logger().info(f"发送数据到串口: {data1.strip()}")
+        self.get_logger().info(f"发送数据到串口: {data1.strip()}")
         # self.get_logger().info(f"发送数据到串口: {data2.strip()}")
 
     def destroy_node(self):

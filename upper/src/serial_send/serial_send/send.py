@@ -24,8 +24,8 @@ class SerialSenderNode(Node):
         self.send_to_serial(wheel_spd, servo_pos)
 
     def send_to_serial(self, wheel_spd, servo_pos):
-        data1 = f"{{T{wheel_spd:.2f},{wheel_spd:.2f},4,4,0B\n}}"
-        data2 = f"{{S{int(servo_pos)}A}}"
+        data1 = f"T{wheel_spd:.2f},{wheel_spd:.2f},4,4,0B\n"
+        data2 = f"S{servo_pos:.2f}A"
         self.serial_port.write(data1.encode())
         self.serial_port.write(data2.encode())
 
