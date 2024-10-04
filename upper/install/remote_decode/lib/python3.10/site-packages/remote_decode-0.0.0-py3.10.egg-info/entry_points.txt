@@ -1,3 +1,0 @@
-[console_scripts]
-decode = remote_decode.decode:main
-

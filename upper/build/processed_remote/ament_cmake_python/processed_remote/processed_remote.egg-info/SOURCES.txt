@@ -1,8 +1,0 @@
-setup.py
-processed_remote/__init__.py
-processed_remote.egg-info/PKG-INFO
-processed_remote.egg-info/SOURCES.txt
-processed_remote.egg-info/dependency_links.txt
-processed_remote.egg-info/top_level.txt
-processed_remote/msg/__init__.py
-processed_remote/msg/_processed_remote.py
