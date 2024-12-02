@@ -1,4 +1,5 @@
 // 时间同步与回传通信
+#include "common_config/config.h"
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/image.hpp>
 #include <message_filters/subscriber.h>
@@ -182,10 +183,10 @@ private:
                         }
                         save_count_ = num_images;
                         // 打开摄像头并建立 ROS2 发布节点
-                        system("ros2 run two_camera appsink1 & echo $! > /tmp/appsink1.pid");
-                        system("ros2 run two_camera appsink2 & echo $! > /tmp/appsink2.pid");
-                        system("ros2 run two_camera appsink3 & echo $! > /tmp/appsink3.pid");
-                        system("ros2 run two_camera appsink4 & echo $! > /tmp/appsink4.pid");
+                        system("ros2 run img_capture appsink1 & echo $! > /tmp/appsink1.pid");
+                        system("ros2 run img_capture appsink2 & echo $! > /tmp/appsink2.pid");
+                        system("ros2 run img_capture appsink3 & echo $! > /tmp/appsink3.pid");
+                        system("ros2 run img_capture appsink4 & echo $! > /tmp/appsink4.pid");
                         RCLCPP_INFO(this->get_logger(), "Executing capture command");
                         capture_flag_ = true;
                         image_count_ = 0;

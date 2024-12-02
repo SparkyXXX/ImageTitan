@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.8)
-project(two_camera)
+project(img_capture)
 
 # 设置C++标准
 set(CMAKE_CXX_STANDARD 17)
@@ -11,6 +11,7 @@ find_package(rclcpp REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(PkgConfig REQUIRED)
+find_package(common_config REQUIRED)
 
 pkg_check_modules(GTK3 REQUIRED gtk+-3.0)
 pkg_check_modules(GST REQUIRED gstreamer-1.0)
@@ -24,6 +25,8 @@ include_directories(
     ${GTK3_INCLUDE_DIRS}
     ${GST_INCLUDE_DIRS}
     ${GST_APP_INCLUDE_DIRS}
+    ${common_config_INCLUDE_DIRS}
+    ${CMAKE_SOURCE_DIR}/img_capture/include
     /usr/include/glib-2.0
     /usr/include/gstreamer-1.0
     /usr/lib/aarch64-linux-gnu/glib-2.0/include

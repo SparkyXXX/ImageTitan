@@ -9,6 +9,7 @@ find_package(message_filters REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(CURL REQUIRED)
+find_package(common_config REQUIRED)
 
 # 添加包含文件路径
 include_directories(
@@ -18,6 +19,7 @@ include_directories(
   ${message_filters_INCLUDE_DIRS}
   ${cv_bridge_INCLUDE_DIRS}
   ${CURL_INCLUDE_DIRS}
+  ${common_config_INCLUDE_DIRS}
 )
 
 # 创建可执行文件
