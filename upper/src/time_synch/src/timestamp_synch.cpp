@@ -15,8 +15,6 @@
 #include <filesystem>
 #include <fstream>
 
-#define server_ip "192.168.22.35"   // 服务器IP地址
-#define server_port 10003           // 本树莓派与服务器通信的端口
 #define DEFAULT_SAVE_COUNT 20       // 默认保存图像数量
 #define TIME_SYNCH_THERSOLD 20      // 时间同步阈值，单位为毫秒
 

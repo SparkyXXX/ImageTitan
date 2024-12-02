@@ -24,9 +24,18 @@ include_directories(
 
 # 创建可执行文件
 add_executable(timestamp_synch src/timestamp_synch.cpp)
+add_executable(cap_controller src/cap_controller.cpp)
 
 # 链接依赖的库
 ament_target_dependencies(timestamp_synch
+  rclcpp
+  sensor_msgs
+  message_filters
+  cv_bridge
+  OpenCV
+)
+
+ament_target_dependencies(cap_controller
   rclcpp
   sensor_msgs
   message_filters
@@ -39,10 +48,18 @@ target_link_libraries(timestamp_synch
   ${OpenCV_LIBRARIES}
   ${CURL_LIBRARIES}
 )
+target_link_libraries(cap_controller
+  ${OpenCV_LIBRARIES}
+  ${CURL_LIBRARIES}
+)
 
 # 安装可执行文件
 install(TARGETS
   timestamp_synch
+  DESTINATION lib/${PROJECT_NAME}
+)
+install(TARGETS
+  cap_controller
   DESTINATION lib/${PROJECT_NAME}
 )
 
