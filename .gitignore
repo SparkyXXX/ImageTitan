@@ -1,6 +1,9 @@
 /upper/install
 /upper/log
 /upper/build
+/upper/image
+/upper/video
+/upper/.vscode
 /lower/Core
 /lower/Drivers
 /lower/MDK-ARM
