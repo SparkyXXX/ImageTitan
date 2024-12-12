@@ -1,3 +1,7 @@
 /upper/install
 /upper/log
 /upper/build
+/lower/Core
+/lower/Drivers
+/lower/MDK-ARM
+/lower/.mxproject
