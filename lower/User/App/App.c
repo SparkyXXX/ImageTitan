@@ -14,6 +14,8 @@
 #define TWO_BUTTONS 2
 #define CONTROL_MODE ONE_BUTTON
 
+#define DEC_COEF 2
+
 void Run_All(void)
 {
     Remote_Control();
@@ -23,8 +25,8 @@ void Remote_Control(void)
 {
     MotorGA12_GetRotateSpeed(&Motor_Left);
     MotorGA12_GetRotateSpeed(&Motor_Right);
-    MotorGA12_SetPwmPulse(&Motor_Left, -(&Akaman_Chassis)->vel_pulse);
-    MotorGA12_SetPwmPulse(&Motor_Right, -(&Akaman_Chassis)->vel_pulse);
+    MotorGA12_SetPwmPulse(&Motor_Left, -(&Akaman_Chassis)->vel_pulse / DEC_COEF);
+    MotorGA12_SetPwmPulse(&Motor_Right, -(&Akaman_Chassis)->vel_pulse / DEC_COEF);
     Servo_SetAngle(&Servo_Front, (&Akaman_Chassis)->servo_angle);
 }
 
