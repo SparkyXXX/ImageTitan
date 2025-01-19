@@ -105,3 +105,28 @@ void ui322buff(uint32_t u, uint8_t *buff)
     *((uint32_t *)tmpbuff) = u;
     memcpy(buff, tmpbuff, 4);
 }
+
+/**
+ * @brief      Extract int16 from byte buffer
+ * @param      buff: Pointer to byte buffer
+ * @retval     The extracted int16
+ */
+int32_t buff2i32(uint8_t *buff)
+{
+    uint8_t tmpbuff[4];
+    memcpy(tmpbuff, buff, 4);
+    return *((int32_t *)tmpbuff);
+}
+
+/**
+ * @brief      Turn int16 push into byte buffer
+ * @param      u: Uint16 T to be pressed in
+ * @param      buff: Pointer to byte buffer
+ * @retval     NULL
+ */
+void i322buff(int32_t u, uint8_t *buff)
+{
+    uint8_t tmpbuff[4];
+    *((int32_t *)tmpbuff) = u;
+    memcpy(buff, tmpbuff, 4);
+}

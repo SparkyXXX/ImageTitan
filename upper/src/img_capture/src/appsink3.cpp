@@ -132,7 +132,7 @@ static GstFlowReturn new_sample_cb(GstElement *sink, gpointer data)
         
         // 发布ROS2消息，打印时间戳
         (*publisher)->publish(std::move(msg));
-        g_print("[2]ROS 2 Time: %ld.%09ld\n", seconds, nanoseconds);
+        g_print("[3]ROS 2 Time: %ld.%09ld\n", seconds, nanoseconds);
         gst_buffer_unmap(buffer, &map);
     }
 

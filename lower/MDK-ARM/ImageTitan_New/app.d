@@ -1,4 +1,5 @@
 imagetitan_new/app.o: ..\User\App\App.c ..\User\App\App.h \
+  ..\User\Module\Device\dev_ga12n20.h ..\Core\Inc\tim.h \
   ..\Core\Inc\main.h ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h \
   ..\Core\Inc\stm32f1xx_hal_conf.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_rcc.h \
@@ -28,7 +29,6 @@ imagetitan_new/app.o: ..\User\App\App.c ..\User\App\App.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_tim.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_tim_ex.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h \
-  ..\User\App\Init.h ..\User\Module\Device\dev_ga12n20.h \
-  ..\Core\Inc\tim.h ..\User\Module\Device\dev_servo.h \
-  ..\Core\Inc\usart.h ..\User\Module\Utilities\util_buffer.h \
+  ..\User\Module\Device\dev_servo.h ..\Core\Inc\usart.h \
+  ..\User\Module\Utilities\util_buffer.h \
   D:\Keil\ARM\ARMCLANG\Bin\..\include\string.h

@@ -29,5 +29,5 @@ imagetitan_new/main.o: ..\Core\Src\main.c ..\Core\Inc\main.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_tim_ex.h \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal_uart.h \
   ..\Core\Inc\tim.h ..\Core\Inc\usart.h ..\Core\Inc\gpio.h \
-  ..\User\App\Init.h ..\User\App\App.h \
-  ..\User\Module\Device\dev_ga12n20.h ..\User\Module\Device\dev_servo.h
+  ..\User\App\App.h ..\User\Module\Device\dev_ga12n20.h \
+  ..\User\Module\Device\dev_servo.h

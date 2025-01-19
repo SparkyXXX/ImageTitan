@@ -88,6 +88,8 @@ int main(int argc, char *argv[])
     return 0;
 }
 
+static cv::Mat frame(IMAGE_HEIGHT, IMAGE_WIDTH, CV_8UC3); // 全局 Mat 复用
+
 // 回调函数，处理从appsink接收到的GstSample
 static GstFlowReturn new_sample_cb(GstElement *sink, gpointer data)
 {
@@ -97,8 +99,8 @@ static GstFlowReturn new_sample_cb(GstElement *sink, gpointer data)
         return GST_FLOW_ERROR;
     }
 
-    GstSample *sample;
-    GstBuffer *buffer;
+    GstSample *sample = nullptr;
+    GstBuffer *buffer = nullptr;
     GstMapInfo map;
 
     g_signal_emit_by_name(sink, "pull-sample", &sample);
@@ -119,7 +121,7 @@ static GstFlowReturn new_sample_cb(GstElement *sink, gpointer data)
     auto seconds = total_nanoseconds / 1000000000;
     auto nanoseconds = total_nanoseconds % 1000000000;
     if (gst_buffer_map(buffer, &map, GST_MAP_READ)) {
-        cv::Mat frame(IMAGE_HEIGHT, IMAGE_WIDTH, CV_8UC3, map.data);
+        // cv::Mat frame(IMAGE_HEIGHT, IMAGE_WIDTH, CV_8UC3, map.data);
         auto msg = std::make_unique<sensor_msgs::msg::Image>();
         msg->header.stamp = ros_now;
         msg->header.frame_id = CAMERA_NUM + std::to_string(server_port) + "_frame";
@@ -129,10 +131,11 @@ static GstFlowReturn new_sample_cb(GstElement *sink, gpointer data)
         msg->is_bigendian = false;
         msg->step = frame.cols * frame.channels();
         msg->data.assign(frame.data, frame.data + map.size);
+        memcpy(frame.data, map.data, map.size); // 直接写入已有 Mat
         
         // 发布ROS2消息，打印时间戳
         (*publisher)->publish(std::move(msg));
-        g_print("[2]ROS 2 Time: %ld.%09ld\n", seconds, nanoseconds);
+        g_print("[1]ROS 2 Time: %ld.%09ld\n", seconds, nanoseconds);
         gst_buffer_unmap(buffer, &map);
     }
 
@@ -154,6 +157,7 @@ static gboolean bus_call(GstBus *bus, GstMessage *msg, gpointer data)
                 gchar *debug;
                 GError *error;
                 gst_message_parse_error(msg, &error, &debug);
+                g_printerr("debug:%s\n", debug);
                 g_free(debug);
                 g_printerr("ERROR:%s\n", error->message);
                 g_error_free(error);
@@ -170,5 +174,7 @@ static void signal_handler(int signum)
 {
     if (loop != nullptr) {
         g_main_loop_quit(loop);
+        g_main_loop_unref(loop); // 释放主循环
+        loop = nullptr;
     }
 }

@@ -1,51 +1,46 @@
 /*
  * @Author: Hatrix 3113624526@qq.com
- * @LastEditTime: 2024-12-12 00:14:29
+ * @LastEditTime: 2025-01-17 16:06:00
  * @Description: GA12N20带编码器减速电机TB6612FNG驱动
  */
 
 #include "dev_ga12n20.h"
 #include "stdlib.h"
 
-void MotorGA12_Init(Dev_MotorGA12_Typedef *pmotor, Dev_EncoderN20_Typedef *pencoder,
-                    TIM_HandleTypeDef *enc_htim, TIM_HandleTypeDef *pwm_htim, uint32_t pwm_ch, uint8_t enc_lines, uint8_t dec_ratio,
+void MotorGA12_Init(Dev_MotorGA12_Typedef *pmotor, TIM_HandleTypeDef *pwm_htim, uint32_t pwm_ch,
                     GPIO_TypeDef *in1_port, uint16_t in1_pin, GPIO_TypeDef *in2_port, uint16_t in2_pin)
 {
-    pmotor->pencoder = pencoder;
-    pmotor->pencoder->enc_htim = enc_htim;
-    pmotor->pencoder->enc_lines = enc_lines;
-    pmotor->pencoder->decode_flag = 0;
     pmotor->pwm_htim = pwm_htim;
     pmotor->pwm_ch = pwm_ch;
-    pmotor->dec_ratio = dec_ratio;
     pmotor->in1_port = in1_port;
     pmotor->in1_pin = in1_pin;
     pmotor->in2_port = in2_port;
     pmotor->in2_pin = in2_pin;
-    HAL_TIM_Encoder_Start(pmotor->pencoder->enc_htim, TIM_CHANNEL_ALL);
     HAL_TIM_PWM_Start(pmotor->pwm_htim, pmotor->pwm_ch);
 }
 
-void MotorGA12_GetRotateSpeed(Dev_MotorGA12_Typedef *pmotor)
+float MotorGA12_GetRotateSpeed(Dev_EncoderN20_Typedef *pencoder)
 {
-    if (pmotor->pencoder->decode_flag)
+	float rotate_speed = 0.0f;
+    if (pencoder->decode_flag)
     {
-        pmotor->pencoder->cnt = __HAL_TIM_GET_COUNTER(pmotor->pencoder->enc_htim);
-        pmotor->pencoder->tick = HAL_GetTick();
-        pmotor->pencoder->delta_cnt = pmotor->pencoder->cnt - pmotor->pencoder->last_cnt;
-        if (pmotor->pencoder->delta_cnt > 32768)
+        pencoder->cnt = __HAL_TIM_GET_COUNTER(pencoder->enc_htim);
+        pencoder->tick = HAL_GetTick();
+        pencoder->delta_cnt = pencoder->cnt - pencoder->last_cnt;
+        if (pencoder->delta_cnt > 32768)
         {
-            pmotor->pencoder->delta_cnt -= 65535;
+            pencoder->delta_cnt -= 65535;
         }
-        else if (pmotor->pencoder->delta_cnt < -32768)
+        else if (pencoder->delta_cnt < -32768)
         {
-            pmotor->pencoder->delta_cnt += 65535;
+            pencoder->delta_cnt += 65535;
         }
-        pmotor->rotate_speed = (float)pmotor->pencoder->delta_cnt * 1000 / 4 / (pmotor->pencoder->enc_lines * pmotor->dec_ratio) / (pmotor->pencoder->tick - pmotor->pencoder->last_tick);
-        pmotor->pencoder->last_cnt = pmotor->pencoder->cnt;
-        pmotor->pencoder->last_tick = pmotor->pencoder->tick;
-        pmotor->pencoder->decode_flag = 0;
+        rotate_speed = (float)pencoder->delta_cnt * 1000 / 4 / pencoder->enc_lines / (pencoder->tick - pencoder->last_tick);
+        pencoder->last_cnt = pencoder->cnt;
+        pencoder->last_tick = pencoder->tick;
+        pencoder->decode_flag = 0;
     }
+	return rotate_speed;
 }
 
 void MotorGA12_SetPwmPulse(Dev_MotorGA12_Typedef *pmotor, int16_t pulse)

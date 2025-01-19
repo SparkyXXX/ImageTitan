@@ -1,6 +1,6 @@
 /*
  * @Author: Hatrix 3113624526@qq.com
- * @LastEditTime: 2024-12-12 13:29:44
+ * @LastEditTime: 2025-01-17 16:06:23
  * @Description: GA12N20带编码器减速电机TB6612FNG驱动
  */
 
@@ -24,22 +24,19 @@ typedef struct
 typedef struct
 {
     float rotate_speed;
-    uint8_t dec_ratio;
     GPIO_TypeDef *in1_port;
     GPIO_TypeDef *in2_port;
     uint16_t in1_pin;
     uint16_t in2_pin;
     TIM_HandleTypeDef *pwm_htim;
     uint32_t pwm_ch;
-    Dev_EncoderN20_Typedef *pencoder;
 } Dev_MotorGA12_Typedef;
 
 /**
  * @description: 电机初始化，按照CubeMX配置和实际硬件传入参数
  * @return {*}
  */
-void MotorGA12_Init(Dev_MotorGA12_Typedef *pmotor, Dev_EncoderN20_Typedef *pencoder,
-                    TIM_HandleTypeDef *enc_htim, TIM_HandleTypeDef *pwm_htim, uint32_t pwm_ch, uint8_t enc_lines, uint8_t dec_ratio,
+void MotorGA12_Init(Dev_MotorGA12_Typedef *pmotor, TIM_HandleTypeDef *pwm_htim, uint32_t pwm_ch,
                     GPIO_TypeDef *in1_port, uint16_t in1_pin, GPIO_TypeDef *in2_port, uint16_t in2_pin);
 
 /**
@@ -47,7 +44,7 @@ void MotorGA12_Init(Dev_MotorGA12_Typedef *pmotor, Dev_EncoderN20_Typedef *penco
  * @param {Dev_MotorGA12_Typedef} *motor
  * @return {*}
  */
-void MotorGA12_GetRotateSpeed(Dev_MotorGA12_Typedef *pmotor);
+float MotorGA12_GetRotateSpeed(Dev_EncoderN20_Typedef *pencoder);
 
 /**
  * @description: 设定pwm电机脉冲比较值并指定转向，开环调节电机转速；注意在调用逻辑中对pulse进行限幅

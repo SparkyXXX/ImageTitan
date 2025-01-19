@@ -1,52 +1,59 @@
 /*
  * @Author: Hatrix 3113624526@qq.com
- * @LastEditTime: 2024-12-12 13:53:52
+ * @LastEditTime: 2025-01-19 17:44:30
  * @Description: 上层应用程序和中断处理函数
  */
 
 #include "App.h"
-#include "Init.h"
-#include "tim.h"
 #include "usart.h"
 #include "util_buffer.h"
 
-#define ONE_BUTTON 1
-#define TWO_BUTTONS 2
-#define CONTROL_MODE ONE_BUTTON
+App_DataPacket_TypeDef DataPacket;
+uint8_t RxBuffer[RX_BUFFER_LEN];
+Dev_MotorGA12_Typedef Motor;
+Dev_Servo_TypeDef Servo_Front;
+Dev_Servo_TypeDef Servo_Back;
 
-#define DEC_COEF 2
+void Init_All(void)
+{
+    MotorGA12_Init(&Motor, &htim1, TIM_CHANNEL_4, AIN1_GPIO_Port, AIN1_Pin, AIN2_GPIO_Port, AIN2_Pin);
+    Servo_Init(&Servo_Front, &htim3, TIM_CHANNEL_1);
+    Servo_Init(&Servo_Back, &htim3, TIM_CHANNEL_2);
+    HAL_UART_Receive_IT(&huart1, RxBuffer, RX_BUFFER_LEN);
+}
 
 void Run_All(void)
 {
-    Remote_Control();
+    RX_Decode();
+    DataPacket.pc_flag == 1 ? HAL_GPIO_WritePin(PC_GPIO_Port, PC_Pin, GPIO_PIN_SET) : HAL_GPIO_WritePin(PC_GPIO_Port, PC_Pin, GPIO_PIN_RESET);
+    DataPacket.img_flag == 1 ? HAL_GPIO_WritePin(IMG_GPIO_Port, IMG_Pin, GPIO_PIN_SET) : HAL_GPIO_WritePin(IMG_GPIO_Port, IMG_Pin, GPIO_PIN_RESET);
+    MotorGA12_SetPwmPulse(&Motor, DataPacket.vel);
+    Servo_SetAngle(&Servo_Front, DataPacket.ang);
+    Servo_SetAngle(&Servo_Back, DataPacket.ang);
 }
 
-void Remote_Control(void)
+float test_ang_front = 90.0f;
+float test_ang_back = 90.0f;
+int16_t test_pulse = 0;
+void Test_All(void)
 {
-    MotorGA12_GetRotateSpeed(&Motor_Left);
-    MotorGA12_GetRotateSpeed(&Motor_Right);
-    MotorGA12_SetPwmPulse(&Motor_Left, -(&Akaman_Chassis)->vel_pulse / DEC_COEF);
-    MotorGA12_SetPwmPulse(&Motor_Right, -(&Akaman_Chassis)->vel_pulse / DEC_COEF);
-    Servo_SetAngle(&Servo_Front, (&Akaman_Chassis)->servo_angle);
+    MotorGA12_SetPwmPulse(&Motor, test_pulse);
+    Servo_SetAngle(&Servo_Front, test_ang_front);
+    Servo_SetAngle(&Servo_Back, test_ang_back);
 }
 
-void Chassis_Init(App_ChassisControl_TypeDef *chassis, float servo_angle_limit)
+void RX_Decode()
 {
-    chassis->vel_pulse = 0;
-    chassis->servo_angle = 0.0f;
-    chassis->servo_angle_limit = servo_angle_limit;
-}
-
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-    if (htim == &htim1)
+    DataPacket.header = RxBuffer[0];
+    DataPacket.footer = RxBuffer[10];
+    if ((DataPacket.header == 0xA5) && (DataPacket.footer == 0x5A))
     {
-        if (Motor_Left.pencoder == NULL || Motor_Right.pencoder == NULL)
-        {
-            return;
-        }
-        (&Motor_Left)->pencoder->decode_flag = 1;
-        (&Motor_Right)->pencoder->decode_flag = 1;
+        DataPacket.vel = buff2float(RxBuffer + 1);
+        DataPacket.ang = buff2float(RxBuffer + 5);
+        DataPacket.flags = RxBuffer[9];
+        DataPacket.pc_flag = (DataPacket.flags >> 7) & 0x01;
+        DataPacket.img_flag = (DataPacket.flags >> 6) & 0x01;
+        DataPacket.control_mode = (DataPacket.flags >> 5) & 0x01;
     }
 }
 
@@ -54,24 +61,6 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart == &huart1)
     {
-        uint8_t checksum = 0;
-        for (int i = 1; i < RX_BUFFER_LEN - 2; i++)
-        {
-            checksum += RxBuffer[i];
-        }
-        checksum = checksum & 0xFF;
-
-        if (RxBuffer[0] == 0xA5 && RxBuffer[RX_BUFFER_LEN - 1] == 0x5A && checksum == RxBuffer[RX_BUFFER_LEN - 2])
-        {
-            (&Akaman_Chassis)->vel_pulse = buff2i16(RxBuffer + 1);
-			#if CONTROL_MODE == ONE_BUTTON
-            (&Akaman_Chassis)->servo_angle = buff2float(RxBuffer + 5) / 900 * (&Akaman_Chassis)->servo_angle_limit; // 90为蓝牙调试助手中设置的值
-			#endif
-			#if CONTROL_MODE == TWO_BUTTONS
-            (&Akaman_Chassis)->servo_angle = buff2float(RxBuffer + 5) / 90 * (&Akaman_Chassis)->servo_angle_limit; // 90为蓝牙调试助手中设置的值
-			#endif
-		}
-
         HAL_UART_Receive_IT(&huart1, RxBuffer, RX_BUFFER_LEN);
     }
 }

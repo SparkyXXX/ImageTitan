@@ -2,6 +2,8 @@
 #include "common_config/config.h"
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/image.hpp>
+#include <sensor_msgs/msg/joy.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include <message_filters/subscriber.h>
 #include <message_filters/synchronizer.h>
 #include <message_filters/sync_policies/approximate_time.h>
@@ -28,8 +30,16 @@ using namespace std::chrono_literals;           // 时间单位
 class CameraSyncNode : public rclcpp::Node
 {
 public:
-    CameraSyncNode() : Node("camera_sync_node"), capture_flag_(false), image_count_(0), save_count_(20)
+    CameraSyncNode() : Node("camera_sync_node"), capture_flag_(false), image_count_(0)
     {
+        single_test_image_subscriber_ = this->create_subscription<sensor_msgs::msg::Image>(
+            "camera1_10003_image", 10, std::bind(&CameraSyncNode::single_test_image_callback, this, std::placeholders::_1));
+
+        capture_flag_subscriber_ = this->create_subscription<std_msgs::msg::Bool>(
+            "capture_flag", 10, std::bind(&CameraSyncNode::capture_flag_callback, this, std::placeholders::_1));
+        pc_flag_publisher_ = this->create_publisher<std_msgs::msg::Bool>("pc_flag", 10);
+        img_flag_publisher_ = this->create_publisher<std_msgs::msg::Bool>("img_flag", 10);
+
         // 声明并初始化参数
         this->declare_parameter("camera1_topic", CAMERA_TOPIC_NAME(1));
         this->declare_parameter("camera2_topic", CAMERA_TOPIC_NAME(2));
@@ -37,7 +47,6 @@ public:
         this->declare_parameter("camera4_topic", CAMERA_TOPIC_NAME(4));
         this->declare_parameter("stitched_image_topic", "stitched_" STR(server_port) "_image");
         this->declare_parameter("save_directory", "./image");
-        this->declare_parameter("save_count", DEFAULT_SAVE_COUNT);
 
         // 获取参数值
         camera1_topic_ = this->get_parameter("camera1_topic").as_string();
@@ -46,15 +55,12 @@ public:
         camera4_topic_ = this->get_parameter("camera4_topic").as_string();
         stitched_image_topic_ = this->get_parameter("stitched_image_topic").as_string();
         save_directory_ = this->get_parameter("save_directory").as_string();
-        save_count_ = this->get_parameter("save_count").as_int();
 
         // 订阅相机的图像话题
         sub1_.subscribe(this, camera1_topic_);
         sub2_.subscribe(this, camera2_topic_);
         sub3_.subscribe(this, camera3_topic_);
         sub4_.subscribe(this, camera4_topic_);
-
-        // 创建用于发布拼接图像的发布器
         stitched_image_publisher_ = this->create_publisher<sensor_msgs::msg::Image>(stitched_image_topic_, 10);
 
         // 设置消息同步器，并将同步后的回调函数注册
@@ -76,13 +82,56 @@ public:
         {
             std::filesystem::create_directories(save_directory_);
         }
-        // hrx
         std::thread(&CameraSyncNode::connectToServer, this).detach();
     }
 
 private:
-    int sock;
-    int save_count_;
+    // 订阅 capture_flag 状态的回调函数
+    void capture_flag_callback(const std_msgs::msg::Bool::SharedPtr msg)
+    {
+        capture_flag_ = msg->data;
+    }
+
+    // 单摄像头测试
+    void single_test_image_callback(const sensor_msgs::msg::Image::SharedPtr msg)
+    {
+        std_msgs::msg::Bool pc_flag_msg;
+        std_msgs::msg::Bool img_flag_msg;
+        if (capture_flag_)
+        {
+            // 指示灯刷新
+            pc_flag_msg.data = false;
+            img_flag_msg.data = true;
+            pc_flag_publisher_->publish(pc_flag_msg);
+            img_flag_publisher_->publish(img_flag_msg);
+
+            // 将 ROS 图像消息转换为 OpenCV 图像
+            cv_bridge::CvImagePtr cv_ptr;
+            try
+            {
+                cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
+            }
+            catch (cv_bridge::Exception& e)
+            {
+                RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
+                return;
+            }
+
+            // 保存图像到本地
+            std::string filename = save_directory_ + "/" + "image_" + std::to_string(image_count_) + ".jpg";
+            cv::imwrite(filename, cv_ptr->image);
+            RCLCPP_INFO(this->get_logger(), "Saved image %d to %s", image_count_, filename.c_str());
+            image_count_++;  // 更新保存图像计数
+        }
+        else
+        {
+            // 指示灯刷新
+            pc_flag_msg.data = true;
+            img_flag_msg.data = false;
+            pc_flag_publisher_->publish(pc_flag_msg);
+            img_flag_publisher_->publish(img_flag_msg);       
+        }
+    }
 
     // 同步回调函数，用于处理同步后的图像
     void syncCallback(const sensor_msgs::msg::Image::ConstSharedPtr& image1,
@@ -90,13 +139,28 @@ private:
                         const sensor_msgs::msg::Image::ConstSharedPtr& image3,
                         const sensor_msgs::msg::Image::ConstSharedPtr& image4)
     {
-        if (!capture_flag_) {
+        std_msgs::msg::Bool pc_flag_msg;
+        std_msgs::msg::Bool img_flag_msg;
+        if (!capture_flag_) 
+        {
+            // 指示灯刷新
+            pc_flag_msg.data = true;
+            img_flag_msg.data = false;
+            pc_flag_publisher_->publish(pc_flag_msg);
+            img_flag_publisher_->publish(img_flag_msg);        
+            // if (!save_directory_.empty()) 
+            // {
+            //     sendAllImagesToServer();
+            //     deleteLocalImages();
+            // }
             return;
         }
-        if (image_count_ >= save_count_) {
-            capture_flag_ = false;
-            return;
-        }
+
+        // 指示灯刷新
+        pc_flag_msg.data = false;
+        img_flag_msg.data = true;
+        pc_flag_publisher_->publish(pc_flag_msg);
+        img_flag_publisher_->publish(img_flag_msg);
 
         // 计算时时间戳的平均值
         int64_t nanosec1 = image1->header.stamp.sec * 1000000000LL + image1->header.stamp.nanosec;
@@ -107,7 +171,6 @@ private:
         int64_t avg_sec = avg_nanosec / 1000000000LL;
         avg_nanosec = avg_nanosec % 1000000000LL;
         rclcpp::Time avg_time(avg_sec, avg_nanosec);
-        // hrx
         std::string timestamp_str = std::to_string(avg_time.seconds());
         
         cv_bridge::CvImagePtr cv_ptr1, cv_ptr2, cv_ptr3, cv_ptr4;
@@ -140,6 +203,7 @@ private:
         image_count_++;
     }
 
+    int sock;
     void connectToServer() {
         while (rclcpp::ok()) {
             struct sockaddr_in serv_addr;
@@ -173,45 +237,7 @@ private:
                 char buffer[1024] = {0};
                 int valread = read(sock, buffer, 1024);
                 if (valread > 0) {
-                    std::string command(buffer, valread);
-                    // capture 命令: 保存指定数量的图像
-                    if (command.rfind("capture", 0) == 0) {
-                        // 提取图片张数
-                        int num_images = save_count_;
-                        if (command.length() > 7) {
-                            num_images = std::stoi(command.substr(8));
-                        }
-                        save_count_ = num_images;
-                        // 打开摄像头并建立 ROS2 发布节点
-                        system("ros2 run img_capture appsink1 & echo $! > /tmp/appsink1.pid");
-                        system("ros2 run img_capture appsink2 & echo $! > /tmp/appsink2.pid");
-                        system("ros2 run img_capture appsink3 & echo $! > /tmp/appsink3.pid");
-                        system("ros2 run img_capture appsink4 & echo $! > /tmp/appsink4.pid");
-                        RCLCPP_INFO(this->get_logger(), "Executing capture command");
-                        capture_flag_ = true;
-                        image_count_ = 0;
-                        std::this_thread::sleep_for(5s);
-
-                    }
-                    // save 命令: 将所有图像发送到服务器
-                    else if (command == "save") {
-                        RCLCPP_INFO(this->get_logger(), "Executing save command");
-                        sendAllImagesToServer();
-                    }
-                    // shutdown 命令: 关闭图像采集的进程并删除本地保存的图像
-                    else if (command == "shutdown") {
-                        RCLCPP_INFO(this->get_logger(), "Shutting down");
-                        system("fuser -k /dev/video0");     // 读取 .pid 文件并杀掉进程
-                        system("fuser -k /dev/video2");
-                        system("fuser -k /dev/video4");
-                        system("fuser -k /dev/video6");
-                        RCLCPP_INFO(this->get_logger(), "Camera stopped, ROS nodes terminated.");
-                        deleteLocalImages();                // 删除本地保存的图像
-                        capture_flag_ = false;              // 停止捕获模式
-                        close(sock);
-                        // rclcpp::shutdown();              // 注释掉这两行就可以一直打开树莓派程序
-                        // return;
-                    }
+                   ;
                 } else {
                     RCLCPP_INFO(this->get_logger(), "Disconnected from server, reconnecting...");
                     close(sock);
@@ -319,6 +345,11 @@ private:
     }
 
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr stitched_image_publisher_;
+    rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr single_test_image_subscriber_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr capture_flag_subscriber_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pc_flag_publisher_;
+    rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr img_flag_publisher_;
+
     message_filters::Subscriber<sensor_msgs::msg::Image> sub1_;
     message_filters::Subscriber<sensor_msgs::msg::Image> sub2_;
     message_filters::Subscriber<sensor_msgs::msg::Image> sub3_;
@@ -329,8 +360,8 @@ private:
                                                  sensor_msgs::msg::Image, 
                                                  sensor_msgs::msg::Image>>> sync_;
 
+    bool capture_flag_;
     int image_count_;
-    std::atomic<bool> capture_flag_;
     std::string save_directory_;
     std::string camera1_topic_;
     std::string camera2_topic_;

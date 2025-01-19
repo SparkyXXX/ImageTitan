@@ -21,7 +21,6 @@
 "imagetitan_new\stm32f1xx_hal_exti.o"
 "imagetitan_new\stm32f1xx_hal_uart.o"
 "imagetitan_new\system_stm32f1xx.o"
-"imagetitan_new\init.o"
 "imagetitan_new\app.o"
 "imagetitan_new\dev_ga12n20.o"
 "imagetitan_new\dev_servo.o"
