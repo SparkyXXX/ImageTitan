@@ -1,6 +1,8 @@
-/upper/install
-/upper/log
-/upper/build
-/upper/image
-/upper/video
-/upper/.vscode
+/Components/*.STL
+/PCB/*/**/
+/Program/Raspiberry/install
+/Program/Raspiberry/log
+/Program/Raspiberry/build
+/Program/Raspiberry/image
+/Program/Raspiberry/video
+/Program/Raspiberry/.vscode
