@@ -45,9 +45,12 @@ float test_ang_back = 50.0f;
 int16_t test_pulse = 0;
 void Test_All(void)
 {
-    MotorGA12_SetPwmPulse(&Motor, test_pulse);
-    Servo_SetAngle(&Servo_Front, test_ang_front);
-    Servo_SetAngle(&Servo_Back, test_ang_back);
+    MotorGA12_SetPwmPulse(&Motor, 1200);
+	HAL_Delay(1000);
+	MotorGA12_SetPwmPulse(&Motor, -1200);
+	HAL_Delay(1000);
+//    Servo_SetAngle(&Servo_Front, test_ang_front);
+//    Servo_SetAngle(&Servo_Back, test_ang_back);
 }
 
 void RX_Decode()
