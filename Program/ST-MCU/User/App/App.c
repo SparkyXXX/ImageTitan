@@ -29,15 +29,15 @@ float turn_ang = 0.0f;
 int16_t go_vel = 0;
 void Run_All(void)
 {
-//    RX_Decode();
-//    DataPacket.pc_flag == 1 ? HAL_GPIO_WritePin(PC_GPIO_Port, PC_Pin, GPIO_PIN_SET) : HAL_GPIO_WritePin(PC_GPIO_Port, PC_Pin, GPIO_PIN_RESET);
-//    DataPacket.img_flag == 1 ? HAL_GPIO_WritePin(IMG_GPIO_Port, IMG_Pin, GPIO_PIN_SET) : HAL_GPIO_WritePin(IMG_GPIO_Port, IMG_Pin, GPIO_PIN_RESET);
-//	go_vel = DataPacket.vel * 1000;
-//	turn_ang = DataPacket.ang * 50 + 50;
-//	MotorGA12_SetPwmPulse(&Motor, go_vel);
-//    Servo_SetAngle(&Servo_Front, turn_ang);
-//    Servo_SetAngle(&Servo_Back, 100 - turn_ang);
-	Test_All();
+    RX_Decode();
+    DataPacket.pc_flag == 1 ? HAL_GPIO_WritePin(PC_GPIO_Port, PC_Pin, GPIO_PIN_SET) : HAL_GPIO_WritePin(PC_GPIO_Port, PC_Pin, GPIO_PIN_RESET);
+    DataPacket.img_flag == 1 ? HAL_GPIO_WritePin(IMG_GPIO_Port, IMG_Pin, GPIO_PIN_SET) : HAL_GPIO_WritePin(IMG_GPIO_Port, IMG_Pin, GPIO_PIN_RESET);
+	go_vel = DataPacket.vel * 1000;
+	turn_ang = DataPacket.ang * 50 + 50;
+	MotorGA12_SetPwmPulse(&Motor, go_vel);
+    Servo_SetAngle(&Servo_Front, turn_ang);
+    Servo_SetAngle(&Servo_Back, 100 - turn_ang);
+//	Test_All();
 }
 
 float test_ang_front = 50.0f;
@@ -45,12 +45,9 @@ float test_ang_back = 50.0f;
 int16_t test_pulse = 0;
 void Test_All(void)
 {
-    MotorGA12_SetPwmPulse(&Motor, 1200);
-	HAL_Delay(1000);
-	MotorGA12_SetPwmPulse(&Motor, -1200);
-	HAL_Delay(1000);
-//    Servo_SetAngle(&Servo_Front, test_ang_front);
-//    Servo_SetAngle(&Servo_Back, test_ang_back);
+    MotorGA12_SetPwmPulse(&Motor, test_pulse);
+    Servo_SetAngle(&Servo_Front, test_ang_front);
+    Servo_SetAngle(&Servo_Back, test_ang_back);
 }
 
 void RX_Decode()
