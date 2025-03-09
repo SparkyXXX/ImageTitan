@@ -32,11 +32,11 @@ void Run_All(void)
     RX_Decode();
     DataPacket.pc_flag == 1 ? HAL_GPIO_WritePin(PC_GPIO_Port, PC_Pin, GPIO_PIN_SET) : HAL_GPIO_WritePin(PC_GPIO_Port, PC_Pin, GPIO_PIN_RESET);
     DataPacket.img_flag == 1 ? HAL_GPIO_WritePin(IMG_GPIO_Port, IMG_Pin, GPIO_PIN_SET) : HAL_GPIO_WritePin(IMG_GPIO_Port, IMG_Pin, GPIO_PIN_RESET);
-	go_vel = DataPacket.vel * 1000;
+	go_vel = DataPacket.vel * (-600);
 	turn_ang = DataPacket.ang * 50 + 50;
 	MotorGA12_SetPwmPulse(&Motor, go_vel);
-    Servo_SetAngle(&Servo_Front, turn_ang);
-    Servo_SetAngle(&Servo_Back, 100 - turn_ang);
+    Servo_SetAngle(&Servo_Front, 100 - turn_ang);
+    Servo_SetAngle(&Servo_Back, turn_ang);
 //	Test_All();
 }
 

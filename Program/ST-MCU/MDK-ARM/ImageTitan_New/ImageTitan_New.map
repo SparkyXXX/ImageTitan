@@ -878,9 +878,9 @@ Section Cross References
     app.o(.text.Run_All) refers to app.o(.bss.turn_ang) for turn_ang
     app.o(.text.Run_All) refers to app.o(.bss.Motor) for Motor
     app.o(.text.Run_All) refers to dev_ga12n20.o(.text.MotorGA12_SetPwmPulse) for MotorGA12_SetPwmPulse
+    app.o(.text.Run_All) refers to faddsub_clz.o(x$fpl$fsub) for __aeabi_fsub
     app.o(.text.Run_All) refers to app.o(.bss.Servo_Front) for Servo_Front
     app.o(.text.Run_All) refers to dev_servo.o(.text.Servo_SetAngle) for Servo_SetAngle
-    app.o(.text.Run_All) refers to faddsub_clz.o(x$fpl$fsub) for __aeabi_fsub
     app.o(.text.Run_All) refers to app.o(.bss.Servo_Back) for Servo_Back
     app.o(.ARM.exidx.text.Run_All) refers to app.o(.text.Run_All) for [Anonymous Symbol]
     app.o(.text.RX_Decode) refers to app.o(.bss.RxBuffer) for RxBuffer
@@ -2643,7 +2643,7 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   Object Name
 
-       588          0          0          0         85       6302   app.o
+       588          0          0          0         85       6300   app.o
        336          0          0          0          0       4974   dev_ga12n20.o
        218          0          0          0          0       3987   dev_servo.o
        214          0          0          0          0       1519   gpio.o
@@ -2665,7 +2665,7 @@ Image component sizes
         16          0          0          0          0       2079   util_buffer.o
 
     ----------------------------------------------------------------------
-     12880         40        310         12       1852     138098   Object Totals
+     12880         40        310         12       1852     138096   Object Totals
          0          0         32          0          0          0   (incl. Generated)
         78          0          0          3         11          0   (incl. Padding)
 
@@ -2724,8 +2724,8 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-     14526        152        310         12       1948     138478   Grand Totals
-     14526        152        310         12       1948     138478   ELF Image Totals
+     14526        152        310         12       1948     138476   Grand Totals
+     14526        152        310         12       1948     138476   ELF Image Totals
      14526        152        310         12          0          0   ROM Totals
 
 ==============================================================================
